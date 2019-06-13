@@ -4,13 +4,13 @@ function main() {
     // Creates a renderer
     const renderer = new THREE.WebGLRenderer({ canvas });
     // Creates a Camera while defining Fustrum
-    const fov = 75,
-        aspect_ratio = 2,
+    const fov = 100,
+        aspect_ratio = window.innerWidth / window.innerHeight,
         near = 0.1,
         far = 5,
         camera = new THREE.PerspectiveCamera(fov, aspect_ratio, near, far);
     // Moving the camera two units away from the origin. (0,0,0)
-    camera.position.z = 2.8;
+    camera.position.z = 3.5;
 
     // Creating a Scene Object
     const scene = new THREE.Scene();
@@ -42,12 +42,24 @@ function main() {
     function render(time) {
         time *= 0.001 //Convert time into seconds
 
+        // Always update aspect ratio
+        if(resizeRenderToDisplaySize(renderer)){
+
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+
+        }
+       
+
         cubes.forEach((cube, idx) => {
             const speed = 1 + idx * .1;
             const rotVal = time * speed;
             cube.rotation.x = rotVal;
             cube.rotation.y = rotVal;
         });
+
+        
 
         renderer.render(scene, camera);
 
@@ -71,6 +83,17 @@ function main() {
         cube.position.x = x;
 
         return cube;
+    }
+
+    function resizeRenderToDisplaySize(rendeder){
+        const canvas = renderer.domElement;
+        const pixelRatio = window.devicePixelRatio; 
+        const width = canvas.clientWidth * pixelRatio;
+        const height = canvas.clientHeight * pixelRatio;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if(needResize){
+            rendeder.setSize(width, height, false);
+        }
     }
 
     render();
