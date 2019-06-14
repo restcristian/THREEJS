@@ -4,13 +4,13 @@ function main() {
     // Creates a renderer
     const renderer = new THREE.WebGLRenderer({ canvas });
     // Creates a Camera while defining Fustrum
-    const fov = 100,
+    const fov = 40,
         aspect_ratio = window.innerWidth / window.innerHeight,
         near = 0.1,
-        far = 5,
+        far = 1000,
         camera = new THREE.PerspectiveCamera(fov, aspect_ratio, near, far);
     // Moving the camera two units away from the origin. (0,0,0)
-    camera.position.z = 3.5;
+    camera.position.z = 120;
 
     // Creating a Scene Object
     const scene = new THREE.Scene();
@@ -59,6 +59,13 @@ function main() {
             cube.rotation.y = rotVal;
         });
 
+        objects.forEach((cube, idx) => {
+            const speed = 1 + idx * .1;
+            const rotVal = time * speed;
+            cube.rotation.x = rotVal;
+            cube.rotation.y = rotVal;
+        }); 
+
         
 
         renderer.render(scene, camera);
@@ -95,6 +102,72 @@ function main() {
             rendeder.setSize(width, height, false);
         }
     }
+
+    const objects = [];
+    const spread = 15;
+
+    function addObject(x, y, obj){
+        obj.position.x = x * spread;
+        obj.position.y = y * spread;
+
+        scene.add(obj);
+        objects.push(obj);
+
+    }
+
+    function createMaterial(){
+        const material = new THREE.MeshPhongMaterial({
+            side:THREE.DoubleSide
+        });
+
+        const hue = Math.random();
+        const saturation = 1;
+        const luminance = .5;
+
+        material.color.setHSL(hue, saturation, luminance);
+
+        return material;
+    }
+
+    function addSolidGeometry(x, y, geometry){
+        const mesh = new THREE.Mesh(geometry, createMaterial());
+        addObject(x,y, mesh);
+    }
+
+    function exampleGeometry(){
+        const width = 3;
+        const height = 3;
+        const depth = 3;
+
+        addSolidGeometry(0, -1, new THREE.BoxBufferGeometry(width, height, depth));
+    }
+
+    function exampleFont(){
+        const loader = new THREE.FontLoader();
+        loader.load('https://threejsfundamentals.org/threejs/resources/threejs/fonts/helvetiker_regular.typeface.json', (font)=> {
+            const geometry = new THREE.TextBufferGeometry('biotch', {
+                font:font,
+                size:5.0,
+                height:.2,
+                curveSegments:12,
+                bevelEnabled:true,
+                bevelThickness:0.15,
+                bevelSize:.3,
+                bevelSegments:5
+            });
+            const mesh = new THREE.Mesh(geometry, createMaterial());
+            geometry.computeBoundingBox();
+            geometry.boundingBox.getCenter(mesh.position).multiplyScalar(-1);
+
+            const parent = new THREE.Object3D();
+            parent.add(mesh);
+            addObject(-1,1, parent);
+        });
+    }
+
+    exampleGeometry();
+    exampleFont();
+
 
     render();
 
